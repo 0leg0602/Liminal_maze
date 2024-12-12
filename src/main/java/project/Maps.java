@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class Maps {
-    int[][] main;
+    int[][] main_map;
     public Maps(){
         BufferedImage main_map_image;
         try {
@@ -15,16 +15,16 @@ public class Maps {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        main = new int[main_map_image.getHeight()][main_map_image.getWidth()];
+        main_map = new int[main_map_image.getHeight()][main_map_image.getWidth()];
 //        System.out.println(Arrays.deepToString(main));
 
-        for (int y = 0; y < main.length; y++) {
-            for (int x = 0; x < main[0].length; x++) {
+        for (int y = 0; y < main_map.length; y++) {
+            for (int x = 0; x < main_map[0].length; x++) {
                 Color pixel_color = new Color(main_map_image.getRGB(x, y));
                 if(pixel_color.equals(Color.WHITE)){
-                main[y][x]=1;
+                main_map[y][x]=1;
                 } else if (pixel_color.equals(Color.RED)){
-                    main[y][x]=2;
+                    main_map[y][x]=2;
                 }
             }
         }

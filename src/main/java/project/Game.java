@@ -2,6 +2,7 @@ package project;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -12,7 +13,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,6 +22,7 @@ public class Game {
     private static JPanel control_panel;
     static final int[] DEFAULT_SIZE = {1024, 512};
     static boolean is_fullscreen = false;
+    static boolean is_paused = true;
 
     static GraphicsEnvironment graphics = GraphicsEnvironment.getLocalGraphicsEnvironment();
     static GraphicsDevice device = graphics.getDefaultScreenDevice();
@@ -32,7 +33,7 @@ public class Game {
     }
 
     private static void prepareGUI() {
-        main_frame = new JFrame("Liminal_maze");
+        main_frame = new JFrame("Liminal maze");
 
         main_frame.pack();
 
@@ -69,7 +70,7 @@ public class Game {
         main_frame.setVisible(true);
     }
 
-    static class MyPanel extends JPanel implements KeyListener, MouseMotionListener {
+    static class MyPanel extends JPanel implements KeyListener, MouseMotionListener, MouseInputListener {
 
         Robot robot;
 
@@ -92,6 +93,8 @@ public class Game {
         public static Maps maps = new Maps();
 
         public static Render render = new Render();
+
+
 
 
         public static class Player {
@@ -118,6 +121,17 @@ public class Game {
             double offset_y = 0;
         }
 
+        public static double fix_angle(double angle) {
+            while (angle < 0) {
+                angle += Math.PI * 2;
+            }
+
+            while (angle > Math.PI * 2) {
+                angle -= Math.PI * 2;
+            }
+            return angle;
+        }
+
 
         public MyPanel() {
 
@@ -129,6 +143,7 @@ public class Game {
 
             addKeyListener(this);
             addMouseMotionListener(this);
+            addMouseListener(this);
         }
 
         @Override
@@ -139,14 +154,18 @@ public class Game {
 
             Graphics2D g2;
             g2 = (Graphics2D) g;
+
+
             g2.setColor(Color.GRAY);
             g2.fillRect(0, 0, width, height);
 
-            render.draw_rays(g2, player, scale, width, height, rays_multiplier);
+            render.draw_rays(g, player, scale, width, height, rays_multiplier);
 
-//            render.drawMap(g2, scale);
+            render.draw_menu(g, width, height);
 
-//            render.draw_player(g2, player);
+//            render.draw_map(g, scale);
+
+//            render.draw_player(g, player);
 
 
         }
@@ -221,6 +240,31 @@ public class Game {
             } else if (keyCode == KeyEvent.VK_K) {
                 System.exit(0);
             }
+
+            if (keyCode == KeyEvent.VK_E) {
+
+                open_door();
+
+            }
+        }
+
+        private void open_door() {
+            int offset = 50;
+
+            if (maps.main_map[(int) (player.y - offset) / scale][(int) (player.x) / scale] == 2) {
+                System.out.println("test1");
+//                maps.main[(int) (player.y - offset) / scale][(int) (player.x) / scale] = 0;
+            } else if (maps.main_map[(int) (player.y + offset) / scale][(int) (player.x) / scale] == 2) {
+                System.out.println("test2");
+//                maps.main[(int) (player.y + offset) / scale][(int) (player.x) / scale] = 0;
+            } else if (maps.main_map[(int) (player.y) / scale][(int) (player.x - offset) / scale] == 2) {
+                System.out.println("test3");
+//                maps.main[(int) (player.y) / scale][(int) (player.x - offset) / scale] = 0;
+            } else if (maps.main_map[(int) (player.y) / scale][(int) (player.x + offset) / scale] == 2) {
+                System.out.println("test4");
+//                maps.main[(int) (player.y) / scale][(int) (player.x + offset) / scale] = 0;
+
+            }
         }
 
         @Override
@@ -256,7 +300,7 @@ public class Game {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (!player.capture_mouse) {
+            if (!player.capture_mouse && !is_paused) {
                 player.capture_mouse = true;
                 BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
                 Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
@@ -282,79 +326,107 @@ public class Game {
             }
         }
 
+
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            is_paused = false;
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+
         class Update extends TimerTask {
             public void run() {
                 repaint();
+                if (!is_paused) {
 
 
-                double prev_pos_x = player.x;
-                double prev_pos_y = player.y;
+                    double prev_pos_x = player.x;
+                    double prev_pos_y = player.y;
 
 
-                if (player.vertical_direction.equals("forward")) {
-                    player.x += player.delta_x * player.speed;
-                    player.y += player.delta_y * player.speed;
+                    if (player.vertical_direction.equals("forward")) {
+                        player.x += player.delta_x * player.speed;
+                        player.y += player.delta_y * player.speed;
 
-                } else if (player.vertical_direction.equals("backward")) {
-                    player.x -= player.delta_x * player.speed;
-                    player.y -= player.delta_y * player.speed;
-                }
-
-                if (player.horizontal_direction.equals("right")) {
-                    player.x -= player.delta_y * player.speed;
-                    player.y += player.delta_x * player.speed;
-                } else if (player.horizontal_direction.equals("left")) {
-                    player.x += player.delta_y * player.speed;
-                    player.y -= player.delta_x * player.speed;
-                }
-
-                int offset = 5;
-
-                if (
-                        maps.main[(int) (player.y - offset) / scale][(int) (player.x) / scale] != 0 ||
-                                maps.main[(int) (player.y + offset) / scale][(int) (player.x) / scale] != 0
-                ) {
-                    player.y = prev_pos_y;
-                }
-
-                if (
-                        maps.main[(int) (player.y) / scale][(int) (player.x - offset) / scale] != 0 ||
-                                maps.main[(int) (player.y) / scale][(int) (player.x + offset) / scale] != 0
-                ) {
-                    player.x = prev_pos_x;
-                }
-
-                player.angle -= player.rotation;
-//
-                if (player.angle > Math.PI * 2) {
-                    player.angle -= Math.PI * 2;
-                } else if (player.angle < 0) {
-                    player.angle += Math.PI * 2;
-                }
-
-                player.delta_x = Math.cos(player.angle) * 5;
-                player.delta_y = Math.sin(player.angle) * 5;
-
-
-                if (player.capture_mouse) {
-
-                    try {
-
-                        Point pos = control_panel.getLocationOnScreen();
-
-                        int oldX = pos.x + getWidth() / 2;
-                        int oldY = pos.y + getHeight() / 2;
-
-
-                        if (player.rotation != 0) {
-                            robot.mouseMove(oldX, oldY);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("control_panel is not visible");
+                    } else if (player.vertical_direction.equals("backward")) {
+                        player.x -= player.delta_x * player.speed;
+                        player.y -= player.delta_y * player.speed;
                     }
 
-                }
+                    if (player.horizontal_direction.equals("right")) {
+                        player.x -= player.delta_y * player.speed;
+                        player.y += player.delta_x * player.speed;
+                    } else if (player.horizontal_direction.equals("left")) {
+                        player.x += player.delta_y * player.speed;
+                        player.y -= player.delta_x * player.speed;
+                    }
 
+                    int offset = 5;
+
+                    if (
+                            maps.main_map[(int) (player.y - offset) / scale][(int) (player.x) / scale] != 0 ||
+                                    maps.main_map[(int) (player.y + offset) / scale][(int) (player.x) / scale] != 0
+                    ) {
+                        player.y = prev_pos_y;
+                    }
+
+                    if (
+                            maps.main_map[(int) (player.y) / scale][(int) (player.x - offset) / scale] != 0 ||
+                                    maps.main_map[(int) (player.y) / scale][(int) (player.x + offset) / scale] != 0
+                    ) {
+                        player.x = prev_pos_x;
+                    }
+
+                    player.angle -= player.rotation;
+//
+                    if (player.angle > Math.PI * 2) {
+                        player.angle -= Math.PI * 2;
+                    } else if (player.angle < 0) {
+                        player.angle += Math.PI * 2;
+                    }
+
+                    player.delta_x = Math.cos(player.angle) * 5;
+                    player.delta_y = Math.sin(player.angle) * 5;
+
+
+                    if (player.capture_mouse) {
+
+                        try {
+
+                            Point pos = control_panel.getLocationOnScreen();
+
+                            int oldX = pos.x + getWidth() / 2;
+                            int oldY = pos.y + getHeight() / 2;
+
+
+                            if (player.rotation != 0) {
+                                robot.mouseMove(oldX, oldY);
+                            }
+                        } catch (Exception e) {
+                            System.out.println("control_panel is not visible");
+                        }
+
+                    }
+                }
 
             }
         }
