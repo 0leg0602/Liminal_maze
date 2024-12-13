@@ -12,6 +12,7 @@ import static project.Game.MyPanel.*;
 
 public class Render {
 
+    public static final int FOV = 60;
     //    static Font text_font = new Font("Arial", Font.PLAIN, 46);
     static Font text_font;
 
@@ -32,7 +33,7 @@ public class Render {
         ArrayList<int[]> rendered_map_cells = new ArrayList<int[]>();
 
         int number_of_ray;
-        int number_of_rays_limit = (int) (60 * Game.MyPanel.rays_multiplier);
+        int number_of_rays_limit = (int) (FOV * Game.MyPanel.rays_multiplier);
         int map_x;
         int map_y;
         int depth_of_field;
@@ -43,12 +44,12 @@ public class Render {
         double deg = Math.PI / 180;
 
         // Horizontal ray
-        Game.MyPanel.Ray hr = new Game.MyPanel.Ray();
-        Game.MyPanel.Ray vr = new Game.MyPanel.Ray();
+        Ray hr = new Ray();
+        Ray vr = new Ray();
 
 
-        hr.angle = player.angle - deg * 30;
-        vr.angle = player.angle - deg * 30;
+        hr.angle = player.angle - deg * FOV / 2;
+        vr.angle = player.angle - deg * FOV / 2;
 
 
         if (hr.angle < 0 || vr.angle < 0) {
@@ -233,8 +234,8 @@ public class Render {
 
                     Color pixel_color;
 
-                    BufferedImage texture = get_buffered_image(current_map_element);
-                    pixel_color = new Color(texture.getRGB(texture_x, segment));
+                    BufferedImage wallTexture = get_buffered_image(current_map_element);
+                    pixel_color = new Color(wallTexture.getRGB(texture_x, segment));
 
                     if (shade) {
                         pixel_color = pixel_color.darker();
@@ -247,55 +248,45 @@ public class Render {
                 }
             }
 
-//            g2.setColor(Color.green);
-//            g2.drawLine(wall_x, (int) ((double) height /2+lineH/2), wall_x, height);
-//
-//            g2.setColor(Color.blue);
-//            g2.drawLine(wall_x, (int) ((double) height /2-lineH/2), wall_x, 0);
+//                g2.setColor(Color.RED);
+//                shortest_ray_distance
+//                g2.fillRect(wall_x, (int) (height / 2 + lineH / 2), width / number_of_rays_limit, 2);
+
+
+
 //            Draw floors
+            for (int y = (int) (height / 2 + lineH / 2); y < height; y++) {
+                double dy = y - (height / 2.0);
+                double raFix = Math.cos(fix_angle(player.angle - shortest_ray_angle));
 
-//            System.out.println(shortest_ray_angle);
+                int floor_scale = height * scale /2;
 
-//            for(int y = (int) ((double) height /2+lineH/2); y < height; y++)
-//            {
-//                double dy=y-(height/2.0);
-//                double raFix =Math.cos(fix_angle(player.angle-shortest_ray_angle));
-////                double tx=player.x/2 + Math.cos(shortest_ray_angle)*158*scale/2/dy/raFix;
-////                double ty=player.y/2 - Math.sin(shortest_ray_angle)*158*scale/2/dy/raFix;
-//
-//
-//                double tx=player.x/2 + Math.cos(shortest_ray_angle)*158*scale/2/dy/raFix;
-//                double ty=player.y/2 - Math.sin(shortest_ray_angle)*158*scale/2/dy/raFix;
-//
-////                int mp=mapF[(int)(ty/(scale/2))*maps.main_map[0].length+(int)(tx/(scale/2))]*scale/2*scale/2;
-//                int mp = 0;
-//
-////                float c=All_Textures[((int)(ty)&(scale/2-1))*scale/2 + ((int)(tx)&(scale/2-1))+mp]*0.7;
-//
-//                System.out.println(tx + " | " + ty);
-//
-//                Color pixel_color = new Color(textures.brick_wall_image.getRGB((int) tx, (int) ty));
-//
-//                g2.setColor(pixel_color);
-//
-//                g2.setStroke(new BasicStroke(((float) width / number_of_rays_limit) + 1));
-//
-//                int floor_x = number_of_ray * width / number_of_rays_limit;
-//
-//                g2.drawLine(floor_x, (int) ((double) height /2-lineH/2), floor_x, 0);
-//
-////                glColor3f(c/1.3,c/1.3,c);glPointSize(8);glBegin(GL_POINTS);glVertex2i(r*8+530,y);glEnd();
-//
-//                //---draw ceiling---
-////                mp=mapC[(int)(ty/32.0)*mapX+(int)(tx/32.0)]*32*32;
-////                c=All_Textures[((int)(ty)&31)*32 + ((int)(tx)&31)+mp]*0.7;
-////                glColor3f(c/2.0,c/1.2,c/2.0);glPointSize(8);glBegin(GL_POINTS);glVertex2i(r*8+530,height-y);glEnd();
-//            }
+                double tx = player.x / 2 + Math.cos(shortest_ray_angle) * floor_scale / 2 / dy / raFix+1;
+                double ty = -player.y / 2 - Math.sin(shortest_ray_angle) * floor_scale / 2 / dy / raFix-1;
 
-//            for (){
-//
-//            }
+                BufferedImage texture = textures.stone_floor_tile_image;
 
+                int textureWidth = texture.getWidth();
+                int textureHeight = texture.getHeight();
+
+//                    if((int)((tx-1)/(scale/2)) == 10 && ((int)(-(ty+1)/(scale/2)) == 3)){
+//                        texture = textures.stone_floor_tile_image;
+//                    }
+
+                int txn = (int) (-tx % textureWidth);
+                if (txn < 0) {
+                    txn += textureWidth;
+                }
+                int tyn = (int) (ty % textureHeight);
+                if (tyn < 0) {
+                    tyn += textureHeight;
+                }
+
+                Color pixel_color = new Color(texture.getRGB(txn, tyn));
+                g2.setColor(pixel_color);
+//                    g2.fillRect(wall_x, y, width / number_of_rays_limit, 1);
+                g2.drawLine(wall_x, y, wall_x, y+1);
+            }
 
             hr.angle += deg / rays_multiplier;
             vr.angle += deg / rays_multiplier;
@@ -303,9 +294,9 @@ public class Render {
             hr.angle = fix_angle(hr.angle);
             vr.angle = fix_angle(vr.angle);
 
-//            g2.setStroke(new BasicStroke(1));
-//            g2.setColor(Color.GREEN);
-//            g2.drawLine((int) player.x, (int) player.y, (int) shortest_ray_x, (int) shortest_ray_y);
+//                g2.setStroke(new BasicStroke(1));
+//                g2.setColor(Color.GREEN);
+//                g2.drawLine((int) player.x, (int) player.y, (int) shortest_ray_x, (int) shortest_ray_y);
 
 
         }
@@ -322,7 +313,6 @@ public class Render {
         if (test_bool && player.x / scale > 19) {
             maps.main_map[1][16] = 1;
         }
-
     }
 
     private static BufferedImage get_buffered_image(int current_map_element) {
@@ -377,25 +367,23 @@ public class Render {
         if (Game.is_paused) {
 
 
-        Graphics2D g2;
-        g2 = (Graphics2D) g;
+            Graphics2D g2;
+            g2 = (Graphics2D) g;
 
-//        Rectangle text_bounds = text_font_metrics.getStringBounds("test text for testing");
+            g2.setColor(new Color(0, 0, 0, 90));
 
-        g2.setColor(new Color(0, 0, 0, 90));
-
-        g2.fillRect(0, 0, width, height);
+            g2.fillRect(0, 0, width, height);
 
 
-        draw_ui_element(g, width, height, "Liminal maze", width / 10, 0);
-        draw_ui_element(g, width, height, "PLAY", width / 15, 30);
-        draw_ui_element(g, width, height, "Settings", width / 15, 50);
-        draw_ui_element(g, width, height, "EXIT", width / 15, 70);
-    }
+            draw_ui_element(g, width, height, "Liminal maze", width / 10, 0);
+            draw_ui_element(g, width, height, "PLAY", width / 15, 30);
+            draw_ui_element(g, width, height, "Settings", width / 15, 50);
+            draw_ui_element(g, width, height, "EXIT", width / 15, 70);
+        }
 
     }
 
-    public int draw_ui_element(Graphics g, int width, int height, String text, int font_size, int start) {
+    public void draw_ui_element(Graphics g, int width, int height, String text, int font_size, int start) {
         Graphics2D g2;
         g2 = (Graphics2D) g;
 
@@ -407,21 +395,19 @@ public class Render {
 
 
         int text_x = width / 2 - font_metrics.stringWidth(text) / 2;
-        double text_y = font_metrics.getHeight() + ((double) height /100)*start;
+        double text_y = font_metrics.getHeight() + ((double) height / 100) * start;
 
-        int offset = width/100;
+        int offset = width / 100;
 
-        Rectangle2D text_rect = font_metrics.getStringBounds(text,g);
+        Rectangle2D text_rect = font_metrics.getStringBounds(text, g);
 
         g2.setColor(Color.BLACK);
 
-        g2.fillRect(text_x-offset, (int) (text_y- (int) text_rect.getHeight()+offset), (int) text_rect.getWidth()+offset*2, (int) text_rect.getHeight()+offset);
+        g2.fillRect(text_x - offset, (int) (text_y - (int) text_rect.getHeight() + offset), (int) text_rect.getWidth() + offset * 2, (int) text_rect.getHeight() + offset);
 
         g2.setColor(Color.WHITE);
 
         g2.drawString(text, text_x, (int) text_y);
-
-        return 0;
 
     }
 }

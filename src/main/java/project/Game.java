@@ -164,7 +164,7 @@ public class Game {
             render.draw_menu(g, width, height);
 
 //            render.draw_map(g, scale);
-
+//
 //            render.draw_player(g, player);
 
 
