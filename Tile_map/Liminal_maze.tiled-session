@@ -1,0 +1,63 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "Liminal_maze.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "#stone_floor": {
+            "dynamicWrapping": false,
+            "scaleInEditor": 1
+        },
+        "Liminal_maze.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 606.0606060606062,
+                "y": 742.4242424242425
+            }
+        },
+        "Liminal_maze.tmx#Ceilings": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Liminal_maze.tmx#Floors": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Liminal_maze.tmx#Walls": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "Liminal_maze.tmx#stone_floor": {
+            "dynamicWrapping": false
+        },
+        "Liminal_maze_tile_set.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/home/oleg/DEV/Java/Liminal_maze/src/main/resources/Tile_sets",
+    "last.imagePath": "/home/oleg/DEV/Java/Liminal_maze/src/main/resources",
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "openFiles": [
+        "Liminal_maze.tmx"
+    ],
+    "project": "Liminal_maze.tiled-project",
+    "recentFiles": [
+        "Liminal_maze.tmx",
+        "Liminal_maze_tile_set.tsx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}
